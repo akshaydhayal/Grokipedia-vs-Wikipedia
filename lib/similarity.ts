@@ -39,7 +39,7 @@ export async function compareArticles(
   
   // Compare each Grokipedia sentence with Wikipedia sentences
   const comparisons: SentenceComparison[] = grokipedia.sentences.map((grokSentence) => {
-    if (!grokSentence.embedding) {
+    if (!grokSentence.embedding || grokSentence.embedding.length === 0) {
       return {
         grokSentence,
         status: 'unique',
@@ -52,19 +52,27 @@ export async function compareArticles(
     let maxSimilarity = -1;
     
     for (const wikiSentence of wikipedia.sentences) {
-      if (!wikiSentence.embedding) continue;
+      if (!wikiSentence.embedding || wikiSentence.embedding.length === 0) {
+        continue;
+      }
       
-      const similarity = cosineSimilarity(
-        grokSentence.embedding,
-        wikiSentence.embedding
-      );
-      
-      if (similarity > maxSimilarity) {
-        maxSimilarity = similarity;
-        bestMatch = {
-          wikiSentence,
-          similarity,
-        };
+      try {
+        const similarity = cosineSimilarity(
+          grokSentence.embedding,
+          wikiSentence.embedding
+        );
+        
+        if (similarity > maxSimilarity) {
+          maxSimilarity = similarity;
+          bestMatch = {
+            wikiSentence,
+            similarity,
+          };
+        }
+      } catch (error) {
+        // Skip this comparison if there's an error
+        console.warn('Error calculating similarity:', error);
+        continue;
       }
     }
     

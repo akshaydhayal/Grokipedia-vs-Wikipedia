@@ -18,50 +18,25 @@ function getGeminiClient(): GoogleGenerativeAI {
   return genAI;
 }
 
+// Standard embedding dimension - all embeddings will be this size
+const EMBEDDING_DIMENSION = 384;
+
 /**
  * Gets embeddings for a text using Gemini
- * Note: Gemini doesn't have a dedicated embeddings API, so we'll use the model's embedding capability
- * For production, consider using text-embedding-004 or similar embedding models
+ * Note: For MVP, we use a fallback embedding method that's fast and consistent
+ * For production, consider using dedicated embedding APIs (OpenAI, Cohere, etc.)
  */
 export async function getEmbedding(text: string): Promise<number[]> {
+  // For MVP, use the simple embedding method directly
+  // This ensures consistent dimensions and fast processing
+  // In production, you could call Gemini API here if needed
   try {
-    const client = getGeminiClient();
-    
-    // Use Gemini's embedding model if available, otherwise use a workaround
-    // For now, we'll use the generative model to create a representation
-    // In production, you might want to use a dedicated embedding service
-    
-    // Alternative: Use Gemini's text-embedding-004 model if available
-    // For MVP, we'll use a simpler approach with the generative model
-    
-    const model = client.getGenerativeModel({ model: 'gemini-pro' });
-    
-    // Create a prompt that generates a numerical representation
-    // This is a workaround - ideally use a proper embedding model
-    const prompt = `Convert the following text into a numerical embedding vector (as a JSON array of 768 numbers between -1 and 1):\n\n${text}`;
-    
-    // For MVP, we'll use a simpler token-based approach
-    // Generate a hash-like representation
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const embeddingText = response.text();
-    
-    // Parse the embedding from the response
-    // This is a simplified approach - in production, use proper embedding APIs
-    try {
-      const parsed = JSON.parse(embeddingText);
-      if (Array.isArray(parsed)) {
-        return parsed;
-      }
-    } catch {
-      // Fallback: generate a simple hash-based embedding
-      return generateSimpleEmbedding(text);
-    }
-    
+    // Try Gemini API if you want, but for MVP we'll use the fallback
+    // This ensures consistent 384-dimensional vectors
     return generateSimpleEmbedding(text);
   } catch (error) {
     console.error('Error getting embedding:', error);
-    // Fallback to simple embedding
+    // Always fallback to simple embedding
     return generateSimpleEmbedding(text);
   }
 }
@@ -69,10 +44,11 @@ export async function getEmbedding(text: string): Promise<number[]> {
 /**
  * Fallback: Generate a simple embedding based on text characteristics
  * Uses word frequency, character n-grams, and text statistics for better semantic representation
+ * Always returns EMBEDDING_DIMENSION (384) dimensional vector
  */
 function generateSimpleEmbedding(text: string): number[] {
-  // Create a 384-dimensional embedding (common size)
-  const embedding: number[] = new Array(384).fill(0);
+  // Create a fixed-size embedding vector
+  const embedding: number[] = new Array(EMBEDDING_DIMENSION).fill(0);
   
   // Normalize text
   const normalized = text.toLowerCase().trim();

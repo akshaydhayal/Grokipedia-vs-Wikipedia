@@ -17,31 +17,64 @@ export interface WikipediaPage {
 
 /**
  * Fetches a Wikipedia article by title
+ * Uses Wikipedia REST API HTML endpoint to get full article content
  */
 export async function fetchWikipediaArticle(topic: string): Promise<Article> {
   try {
-    // Use the REST API for cleaner content
-    const response = await fetch(
-      `${WIKIPEDIA_API_URL}/page/summary/${encodeURIComponent(topic)}`
+    // Use the REST API HTML endpoint which gives us the full article
+    const htmlResponse = await fetch(
+      `${WIKIPEDIA_API_URL}/page/html/${encodeURIComponent(topic)}`
     );
     
-    if (!response.ok) {
-      // Try to get the full page content if summary fails
-      return await fetchWikipediaFullPage(topic);
+    if (!htmlResponse.ok) {
+      // If HTML endpoint fails, try the summary as fallback
+      console.warn(`Wikipedia HTML endpoint failed for ${topic}, trying summary...`);
+      return await fetchWikipediaSummary(topic);
     }
     
-    const data: WikipediaPage = await response.json();
+    const html = await htmlResponse.text();
     
-    // Get full page content for better comparison
-    const fullContent = await fetchWikipediaFullPageContent(topic);
-    const content = fullContent || data.extract;
+    // Get the title from the HTML or use the topic
+    let title = topic;
+    const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+    if (titleMatch) {
+      title = titleMatch[1].replace(/\s*-\s*Wikipedia.*$/i, '').trim();
+    }
     
-    const sentences = splitIntoSentences(normalizeText(content));
+    // Extract main content from HTML
+    const content = extractMainContent(html);
+    
+    if (!content || content.length < 100) {
+      // Fallback to summary if content extraction fails
+      console.warn(`Wikipedia content extraction too short for ${topic}, trying summary...`);
+      return await fetchWikipediaSummary(topic);
+    }
+    
+    // Clean up the content
+    const cleanedContent = content
+      .replace(/\[\d+\]/g, '') // Remove reference markers like [1], [2]
+      .replace(/\[citation needed\]/gi, '') // Remove citation needed markers
+      .replace(/\[edit\]/gi, '') // Remove edit links
+      .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
+      .trim();
+    
+    if (!cleanedContent || cleanedContent.length < 50) {
+      throw new Error(`No meaningful content extracted from Wikipedia article: ${topic}`);
+    }
+    
+    const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+    const sentences = splitIntoSentences(normalizeText(cleanedContent));
+    
+    if (sentences.length === 0) {
+      throw new Error(`No sentences extracted from Wikipedia article: ${topic}`);
+    }
+    
+    console.log(`✓ Wikipedia fetched: ${sentences.length} sentences, ${cleanedContent.length} chars`);
     
     return {
-      title: data.title,
-      content: normalizeText(content),
-      url: data.content_urls.desktop.page,
+      title,
+      content: normalizeText(cleanedContent),
+      url,
       sentences: sentences.map((text, index) => ({
         text,
         index,
@@ -49,8 +82,41 @@ export async function fetchWikipediaArticle(topic: string): Promise<Article> {
     };
   } catch (error) {
     console.error('Error fetching Wikipedia article:', error);
-    throw new Error(`Failed to fetch Wikipedia article: ${error}`);
+    // Fallback to summary method
+    try {
+      console.log('Trying Wikipedia summary fallback...');
+      return await fetchWikipediaSummary(topic);
+    } catch (fallbackError) {
+      throw new Error(`Failed to fetch Wikipedia article: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
+}
+
+/**
+ * Fallback: Fetch Wikipedia summary (short extract)
+ */
+async function fetchWikipediaSummary(topic: string): Promise<Article> {
+  const response = await fetch(
+    `${WIKIPEDIA_API_URL}/page/summary/${encodeURIComponent(topic)}`
+  );
+  
+  if (!response.ok) {
+    throw new Error(`Wikipedia page not found: ${topic}`);
+  }
+  
+  const data: WikipediaPage = await response.json();
+  const content = data.extract;
+  const sentences = splitIntoSentences(normalizeText(content));
+  
+  return {
+    title: data.title,
+    content: normalizeText(content),
+    url: data.content_urls.desktop.page,
+    sentences: sentences.map((text, index) => ({
+      text,
+      index,
+    })),
+  };
 }
 
 /**
