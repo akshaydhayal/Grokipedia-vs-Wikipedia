@@ -257,25 +257,36 @@ export default function ResultsPage() {
             <span className="text-xs uppercase tracking-wide text-slate-400">DKG Publishing</span>
           </div>
           {publishResult.ual && (
-            <div className="text-sm mb-2 text-slate-200">
-              <strong className="text-slate-300">UAL:</strong>{' '}
-              <code className="bg-dark-tertiary/50 px-2 py-1 rounded text-accent-cyan text-xs">
-                {publishResult.ual}
-              </code>
+            <div className="space-y-3">
+              <div className="text-sm text-slate-200">
+                <strong className="text-slate-300">UAL:</strong>{' '}
+                <code className="bg-dark-tertiary/50 px-2 py-1 rounded text-accent-cyan text-xs break-all">
+                  {publishResult.ual}
+                </code>
+              </div>
+              {publishResult.datasetRoot && (
+                <div className="text-sm text-slate-200">
+                  <strong className="text-slate-300">Dataset Root:</strong>{' '}
+                  <code className="bg-dark-tertiary/50 px-2 py-1 rounded text-accent-purple text-xs break-all">
+                    {publishResult.datasetRoot}
+                  </code>
+                </div>
+              )}
+              <div className="pt-2">
+                <a
+                  href={`https://dkg-testnet.origintrail.io/explore?ual=${encodeURIComponent(publishResult.ual)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-cyan/20 to-accent-purple/20 border border-accent-cyan/40 text-accent-cyan hover:text-white hover:border-accent-cyan/60 rounded-lg text-sm font-medium transition-all"
+                >
+                  🔗 View on DKG Explorer
+                  <span className="text-xs opacity-70">↗</span>
+                </a>
+              </div>
             </div>
           )}
           {publishResult.error && (
             <div className="text-sm text-rose-300">{publishResult.error}</div>
-          )}
-          {publishResult.jsonld && (
-            <details className="mt-3">
-              <summary className="cursor-pointer text-sm font-medium text-slate-200 hover:text-white transition-colors">
-                View JSON-LD
-              </summary>
-              <pre className="mt-2 p-3 bg-dark-tertiary/50 rounded-lg text-xs overflow-auto max-h-64 text-slate-300 border border-slate-700/50">
-                {JSON.stringify(publishResult.jsonld, null, 2)}
-              </pre>
-            </details>
           )}
         </section>
       )}

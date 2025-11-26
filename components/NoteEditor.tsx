@@ -16,7 +16,7 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
   const [activeDiscrepancyId, setActiveDiscrepancyId] = useState<string | null>(null);
 
   const activeDiscrepancy = activeDiscrepancyId
-    ? editedNote.discrepancies.find((d) => d.id === activeDiscrepancyId)
+    ? editedNote.discrepancies.find((d) => d['@id'] === activeDiscrepancyId)
     : null;
 
   const updateSummary = (summary: string) => {
@@ -27,13 +27,13 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
     setEditedNote({
       ...editedNote,
       discrepancies: editedNote.discrepancies.map(d =>
-        d.id === id ? { ...d, ...updates } : d
+        d['@id'] === id ? { ...d, ...updates } : d
       ),
     });
   };
 
   const addEvidence = (id: string, evidence: string) => {
-    const discrepancy = editedNote.discrepancies.find(d => d.id === id);
+    const discrepancy = editedNote.discrepancies.find(d => d['@id'] === id);
     if (discrepancy && !discrepancy.evidence.includes(evidence)) {
       updateDiscrepancy(id, {
         evidence: [...discrepancy.evidence, evidence],
@@ -42,7 +42,7 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
   };
 
   const removeEvidence = (id: string, evidenceIndex: number) => {
-    const discrepancy = editedNote.discrepancies.find(d => d.id === id);
+    const discrepancy = editedNote.discrepancies.find(d => d['@id'] === id);
     if (discrepancy) {
       updateDiscrepancy(id, {
         evidence: discrepancy.evidence.filter((_, i) => i !== evidenceIndex),
@@ -74,9 +74,9 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
           
           {editedNote.discrepancies.map((discrepancy) => (
             <div
-              key={discrepancy.id}
+              key={discrepancy['@id']}
               className="bg-dark-tertiary/30 border border-slate-700/60 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-slate-500/70 transition-all cursor-pointer"
-              onClick={() => setActiveDiscrepancyId(discrepancy.id)}
+              onClick={() => setActiveDiscrepancyId(discrepancy['@id'])}
             >
               <div className="flex-1 min-w-0">
                 <div className="text-xs uppercase tracking-wide text-accent-cyan font-semibold mb-1">
@@ -194,10 +194,10 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
                 <label className="block text-sm font-semibold text-slate-300 mb-2">
                   Note
                 </label>
-                {editingDiscrepancy === activeDiscrepancy.id ? (
+                {editingDiscrepancy === activeDiscrepancy['@id'] ? (
                   <textarea
                     value={activeDiscrepancy.note}
-                    onChange={(e) => updateDiscrepancy(activeDiscrepancy.id, { note: e.target.value })}
+                    onChange={(e) => updateDiscrepancy(activeDiscrepancy['@id'], { note: e.target.value })}
                     className="w-full px-4 py-3 bg-dark-tertiary/60 border border-slate-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50 text-sm text-slate-200"
                     rows={3}
                     onBlur={() => setEditingDiscrepancy(null)}
@@ -206,7 +206,7 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
                 ) : (
                   <div
                     className="text-sm text-slate-300 p-3 bg-dark-tertiary/60 rounded-lg border border-slate-700/60 cursor-text hover:border-accent-cyan/30 transition-colors"
-                    onClick={() => setEditingDiscrepancy(activeDiscrepancy.id)}
+                    onClick={() => setEditingDiscrepancy(activeDiscrepancy['@id'])}
                   >
                     {activeDiscrepancy.note}
                   </div>
@@ -229,7 +229,7 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
                         {evidence}
                       </a>
                       <button
-                        onClick={() => removeEvidence(activeDiscrepancy.id, idx)}
+                        onClick={() => removeEvidence(activeDiscrepancy['@id'], idx)}
                         className="text-rose-400 hover:text-rose-300 text-lg px-2 hover:bg-rose-500/10 rounded transition-colors"
                       >
                         ×
@@ -244,7 +244,7 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
                       if (e.key === 'Enter') {
                         const input = e.currentTarget;
                         if (input.value.trim()) {
-                          addEvidence(activeDiscrepancy.id, input.value.trim());
+                          addEvidence(activeDiscrepancy['@id'], input.value.trim());
                           input.value = '';
                         }
                       }

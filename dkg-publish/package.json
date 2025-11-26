@@ -1,0 +1,19 @@
+{
+  "name": "dkg-publish",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "assertion-tools": "8.0.6",
+    "ethers": "^6.1.0",
+    "dkg-evm-module": "8.0.4",
+    "dkg.js": "^8.2.0"
+  }
+}

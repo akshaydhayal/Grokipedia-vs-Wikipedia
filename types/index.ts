@@ -51,6 +51,7 @@ export interface ComparisonSummary {
 export interface CommunityNote {
   '@context': string;
   '@type': string;
+  '@id': string;
   name: string;
   about: string;
   author?: string;
@@ -61,7 +62,8 @@ export interface CommunityNote {
 }
 
 export interface Discrepancy {
-  id: string;
+  '@id': string;
+  '@type': string;
   grok_sentence: string;
   wiki_sentence?: string;
   similarity_score: number;
@@ -73,7 +75,9 @@ export interface Discrepancy {
 export interface PublishResult {
   success: boolean;
   ual?: string;
+  datasetRoot?: string;
   error?: string;
   jsonld?: CommunityNote;
+  operation?: any;
 }
 

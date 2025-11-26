@@ -28,11 +28,22 @@
 
 To enable DKG publishing, add these to `.env.local`:
 ```env
-DKG_NODE_ENDPOINT=https://your-dkg-node-endpoint.com
+# Required for DKG publishing
 DKG_PRIVATE_KEY=your_private_key_here
+
+# Optional - defaults to public OriginTrail node
+DKG_NODE_ENDPOINT=https://v6-pegasus-node-03.origin-trail.network
+DKG_NODE_PORT=8900
+DKG_BLOCKCHAIN_NAME=otp:20430
 ```
 
-If not configured, the app will generate JSON-LD that can be manually published.
+**Important**: 
+- Get your private key from your Ethereum wallet (the one you use for OriginTrail)
+- The private key should start with `0x`
+- Never commit your private key to version control
+- If not configured, the app will generate JSON-LD that can be manually published
+
+The DKG publishing uses the `dkg-publish` module in this repository, which connects to OriginTrail public nodes.
 
 ## Project Structure
 
