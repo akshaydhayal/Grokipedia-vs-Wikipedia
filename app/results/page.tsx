@@ -124,21 +124,21 @@ export default function ResultsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p className="text-gray-600">Fetching and comparing articles...</p>
-        <p className="text-sm text-gray-500 mt-2">This may take a minute</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-cyan mb-4"></div>
+        <p className="text-slate-300">Fetching and comparing articles...</p>
+        <p className="text-sm text-slate-500 mt-2">This may take a minute</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <h2 className="text-xl font-bold text-red-900 mb-2">Error</h2>
-        <p className="text-red-700 mb-4">{error}</p>
+      <div className="glass border border-rose-500/30 rounded-xl p-6">
+        <h2 className="text-xl font-bold text-rose-400 mb-2">Error</h2>
+        <p className="text-slate-300 mb-4">{error}</p>
         <button
           onClick={() => router.push('/')}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          className="px-4 py-2 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-lg hover:from-rose-600 hover:to-rose-700 transition-all"
         >
           Go Back
         </button>
@@ -155,12 +155,12 @@ export default function ResultsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-4xl font-bold gradient-text mb-2">
             Comparison: {topic}
           </h2>
           <button
             onClick={() => router.push('/')}
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="text-accent-cyan hover:text-accent-cyan/80 text-sm transition-colors"
           >
             ← Back to Search
           </button>
@@ -175,27 +175,27 @@ export default function ResultsPage() {
 
       {/* Selected Sentence Details */}
       {selectedSentence && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold mb-2">Selected Sentence Details</h3>
-          <div className="text-sm space-y-2">
+        <div className="glass border border-accent-cyan/30 rounded-xl p-4 glow-cyan">
+          <h3 className="font-semibold mb-3 text-slate-200">Selected Sentence Details</h3>
+          <div className="text-sm space-y-2 text-slate-300">
             <div>
-              <strong>Grokipedia:</strong> {selectedSentence.grokSentence.text}
+              <strong className="text-accent-cyan">Grokipedia:</strong> <span className="text-slate-200">{selectedSentence.grokSentence.text}</span>
             </div>
             {selectedSentence.bestMatch && (
               <div>
-                <strong>Best Wikipedia Match:</strong> {selectedSentence.bestMatch.wikiSentence.text}
+                <strong className="text-accent-purple">Best Wikipedia Match:</strong> <span className="text-slate-200">{selectedSentence.bestMatch.wikiSentence.text}</span>
               </div>
             )}
             <div>
-              <strong>Similarity:</strong> {(selectedSentence.similarity * 100).toFixed(1)}%
+              <strong className="text-slate-400">Similarity:</strong> <span className="text-slate-200">{(selectedSentence.similarity * 100).toFixed(1)}%</span>
             </div>
             <div>
-              <strong>Status:</strong> {selectedSentence.status}
+              <strong className="text-slate-400">Status:</strong> <span className="text-slate-200">{selectedSentence.status}</span>
             </div>
           </div>
           <button
             onClick={() => setSelectedSentence(null)}
-            className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+            className="mt-3 text-sm text-accent-cyan hover:text-accent-cyan/80 transition-colors"
           >
             Close
           </button>
@@ -212,26 +212,28 @@ export default function ResultsPage() {
 
       {/* Publish Result */}
       {publishResult && (
-        <div className={`border rounded-lg p-4 ${
+        <div className={`glass border rounded-xl p-4 ${
           publishResult.success
-            ? 'bg-green-50 border-green-200'
-            : 'bg-red-50 border-red-200'
+            ? 'border-emerald-500/30'
+            : 'border-rose-500/30'
         }`}>
-          <h3 className="font-semibold mb-2">
+          <h3 className={`font-semibold mb-2 ${
+            publishResult.success ? 'text-emerald-400' : 'text-rose-400'
+          }`}>
             {publishResult.success ? '✓ Published Successfully' : '✗ Publish Failed'}
           </h3>
           {publishResult.ual && (
             <div className="text-sm mb-2">
-              <strong>UAL:</strong> <code className="bg-white px-2 py-1 rounded">{publishResult.ual}</code>
+              <strong className="text-slate-300">UAL:</strong> <code className="bg-dark-tertiary/50 px-2 py-1 rounded text-accent-cyan text-xs">{publishResult.ual}</code>
             </div>
           )}
           {publishResult.error && (
-            <div className="text-sm text-red-700">{publishResult.error}</div>
+            <div className="text-sm text-rose-400">{publishResult.error}</div>
           )}
           {publishResult.jsonld && (
             <details className="mt-2">
-              <summary className="cursor-pointer text-sm font-medium">View JSON-LD</summary>
-              <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto max-h-64">
+              <summary className="cursor-pointer text-sm font-medium text-slate-300 hover:text-accent-cyan transition-colors">View JSON-LD</summary>
+              <pre className="mt-2 p-3 bg-dark-tertiary/50 rounded-lg text-xs overflow-auto max-h-64 text-slate-300 border border-slate-700/50">
                 {JSON.stringify(publishResult.jsonld, null, 2)}
               </pre>
             </details>

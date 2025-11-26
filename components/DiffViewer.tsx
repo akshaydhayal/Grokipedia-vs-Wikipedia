@@ -15,65 +15,65 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
     <div className="w-full space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-          <div className="text-2xl font-bold text-green-700">{summary.matches}</div>
-          <div className="text-sm text-green-600">Matches</div>
+        <div className="glass p-4 rounded-xl border border-emerald-500/30 glow-cyan">
+          <div className="text-3xl font-bold text-emerald-400">{summary.matches}</div>
+          <div className="text-sm text-slate-400">Matches</div>
         </div>
-        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-          <div className="text-2xl font-bold text-yellow-700">{summary.paraphrases}</div>
-          <div className="text-sm text-yellow-600">Paraphrases</div>
+        <div className="glass p-4 rounded-xl border border-amber-500/30">
+          <div className="text-3xl font-bold text-amber-400">{summary.paraphrases}</div>
+          <div className="text-sm text-slate-400">Paraphrases</div>
         </div>
-        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <div className="text-2xl font-bold text-red-700">{summary.unique}</div>
-          <div className="text-sm text-red-600">Unique/Hallucinations</div>
+        <div className="glass p-4 rounded-xl border border-rose-500/30">
+          <div className="text-3xl font-bold text-rose-400">{summary.unique}</div>
+          <div className="text-sm text-slate-400">Unique/Hallucinations</div>
         </div>
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-          <div className="text-2xl font-bold text-blue-700">{summary.potentialHallucinations.length}</div>
-          <div className="text-sm text-blue-600">High Risk</div>
+        <div className="glass p-4 rounded-xl border border-accent-cyan/30 glow-cyan">
+          <div className="text-3xl font-bold text-accent-cyan">{summary.potentialHallucinations.length}</div>
+          <div className="text-sm text-slate-400">High Risk</div>
         </div>
       </div>
 
       {/* Side-by-side comparison */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-6">
         {/* Wikipedia Column */}
-        <div className="border rounded-lg p-4 bg-white">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b">
-            <h3 className="font-semibold text-lg">Wikipedia</h3>
+        <div className="glass border-2 border-accent-purple/30 rounded-xl p-5 bg-dark-secondary/30">
+          <div className="flex items-center justify-between mb-5 pb-4 border-b-2 border-accent-purple/20">
+            <h3 className="font-bold text-xl text-accent-purple">Wikipedia</h3>
             <a
               href={wikipedia.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-accent-purple/80 hover:text-accent-purple transition-colors"
             >
               View Source →
             </a>
           </div>
-          <div className="space-y-2 max-h-[600px] overflow-y-auto">
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
             {wikipedia.sentences.map((sentence, index) => (
               <div
                 key={index}
-                className="p-2 text-sm border-l-2 border-gray-200 hover:bg-gray-50"
+                className="p-4 text-sm bg-dark-tertiary/40 border border-slate-700/60 rounded-lg hover:bg-dark-tertiary/60 hover:border-slate-600/80 transition-all"
               >
-                {sentence.text}
+                <span className="text-slate-200 leading-relaxed">{sentence.text}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Grokipedia Column */}
-        <div className="border rounded-lg p-4 bg-white">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b">
-            <h3 className="font-semibold text-lg">Grokipedia</h3>
+        <div className="glass border-2 border-accent-cyan/30 rounded-xl p-5 bg-dark-secondary/30">
+          <div className="flex items-center justify-between mb-5 pb-4 border-b-2 border-accent-cyan/20">
+            <h3 className="font-bold text-xl text-accent-cyan">Grokipedia</h3>
             <a
               href={grokipedia.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-accent-cyan/80 hover:text-accent-cyan transition-colors"
             >
               View Source →
             </a>
           </div>
-          <div className="space-y-2 max-h-[600px] overflow-y-auto">
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
             {comparisons.map((comp, index) => {
               const colorClass = getStatusColor(comp.status);
               const similarityLabel = getSimilarityLabel(comp.similarity);
@@ -81,18 +81,18 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
               return (
                 <div
                   key={index}
-                  className={`p-2 text-sm border-l-4 ${colorClass} cursor-pointer hover:opacity-80 transition-opacity`}
+                  className={`p-4 text-sm border-l-4 ${colorClass} cursor-pointer hover:opacity-90 transition-all rounded-r-lg bg-dark-tertiary/40`}
                   onClick={() => onSentenceClick?.(comp)}
                   title={`Similarity: ${(comp.similarity * 100).toFixed(1)}% - ${similarityLabel}`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span>{comp.grokSentence.text}</span>
-                    <span className="text-xs font-semibold whitespace-nowrap">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <span className="text-slate-200 leading-relaxed flex-1">{comp.grokSentence.text}</span>
+                    <span className="text-xs font-bold whitespace-nowrap px-2.5 py-1 bg-dark-secondary/80 rounded border border-slate-600/50">
                       {(comp.similarity * 100).toFixed(0)}%
                     </span>
                   </div>
                   {comp.bestMatch && comp.status !== 'unique' && (
-                    <div className="mt-1 text-xs text-gray-600 italic">
+                    <div className="mt-3 pt-3 text-xs text-slate-400 italic border-t border-slate-700/50">
                       Matches: "{comp.bestMatch.wikiSentence.text.substring(0, 100)}..."
                     </div>
                   )}
@@ -104,21 +104,20 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-sm">
+      <div className="flex flex-wrap gap-4 text-sm glass p-4 rounded-xl border border-slate-700/50">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-          <span>Match (≥85%)</span>
+          <div className="w-4 h-4 bg-emerald-500/30 border border-emerald-500/50 rounded"></div>
+          <span className="text-slate-300">Match (≥85%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-yellow-100 border border-yellow-300 rounded"></div>
-          <span>Paraphrase (60-85%)</span>
+          <div className="w-4 h-4 bg-amber-500/30 border border-amber-500/50 rounded"></div>
+          <span className="text-slate-300">Paraphrase (60-85%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
-          <span>Unique/Hallucination (&lt;60%)</span>
+          <div className="w-4 h-4 bg-rose-500/30 border border-rose-500/50 rounded"></div>
+          <span className="text-slate-300">Unique/Hallucination (&lt;60%)</span>
         </div>
       </div>
     </div>
   );
 }
-

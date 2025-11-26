@@ -1,7 +1,7 @@
 // Wikipedia API client
 
 import { Article, Sentence } from '@/types';
-import { normalizeText, splitIntoSentences, extractMainContent } from './utils';
+import { normalizeText, splitIntoSentences, extractMainContent, groupSentencesIntoParagraphs } from './utils';
 
 const WIKIPEDIA_API_URL = 'https://en.wikipedia.org/api/rest_v1';
 
@@ -63,13 +63,32 @@ export async function fetchWikipediaArticle(topic: string): Promise<Article> {
     }
     
     const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
-    const sentences = splitIntoSentences(normalizeText(cleanedContent));
+    
+    // Extract paragraphs from the cleaned content (preserve paragraph structure)
+    // Split by double newlines to get paragraphs, then split each paragraph into sentences
+    const paragraphs = cleanedContent.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    
+    // For each paragraph, combine sentences to create meaningful units (like Grokipedia)
+    const paragraphSentences: string[] = [];
+    for (const paragraph of paragraphs) {
+      const sentences = splitIntoSentences(normalizeText(paragraph));
+      if (sentences.length > 0) {
+        // Combine 2-4 sentences per paragraph unit to match Grokipedia structure
+        const combined = groupSentencesIntoParagraphs(sentences, 3);
+        paragraphSentences.push(...combined);
+      }
+    }
+    
+    // If no paragraphs found, fall back to regular sentence splitting
+    const sentences = paragraphSentences.length > 0 
+      ? paragraphSentences 
+      : splitIntoSentences(normalizeText(cleanedContent));
     
     if (sentences.length === 0) {
       throw new Error(`No sentences extracted from Wikipedia article: ${topic}`);
     }
     
-    console.log(`✓ Wikipedia fetched: ${sentences.length} sentences, ${cleanedContent.length} chars`);
+    console.log(`✓ Wikipedia fetched: ${sentences.length} paragraph units, ${cleanedContent.length} chars`);
     
     return {
       title,

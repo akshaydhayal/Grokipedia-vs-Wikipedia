@@ -134,15 +134,15 @@ function generateSummary(comparisons: SentenceComparison[]): ComparisonSummary {
 export function getStatusColor(status: SentenceComparison['status']): string {
   switch (status) {
     case 'match':
-      return 'bg-green-100 text-green-800 border-green-300';
+      return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50';
     case 'paraphrase':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      return 'bg-amber-500/20 text-amber-300 border-amber-500/50';
     case 'unique':
-      return 'bg-red-100 text-red-800 border-red-300';
+      return 'bg-rose-500/20 text-rose-300 border-rose-500/50';
     case 'missing':
-      return 'bg-gray-100 text-gray-800 border-gray-300';
+      return 'bg-slate-700/50 text-slate-400 border-slate-600/50';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-300';
+      return 'bg-slate-700/50 text-slate-400 border-slate-600/50';
   }
 }
 

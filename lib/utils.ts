@@ -38,6 +38,23 @@ export function splitIntoSentences(text: string): string[] {
 }
 
 /**
+ * Groups sentences into paragraphs (combines multiple sentences)
+ * This helps match Grokipedia's paragraph structure
+ */
+export function groupSentencesIntoParagraphs(sentences: string[], sentencesPerParagraph: number = 3): string[] {
+  const paragraphs: string[] = [];
+  
+  for (let i = 0; i < sentences.length; i += sentencesPerParagraph) {
+    const paragraph = sentences.slice(i, i + sentencesPerParagraph).join(' ');
+    if (paragraph.trim().length > 0) {
+      paragraphs.push(paragraph);
+    }
+  }
+  
+  return paragraphs;
+}
+
+/**
  * Extracts main content from Wikipedia HTML (removes references, navboxes, etc.)
  */
 export function extractMainContent(html: string): string {
@@ -48,8 +65,8 @@ export function extractMainContent(html: string): string {
     // Remove unwanted elements
     $('script, style, nav, .navbox, .reference, .mw-editsection, .mw-jump-link, .toc, .infobox, .thumb, .gallery, .metadata, .hatnote, .dablink, .vertical-navbox, .sistersitebox, .ambox, .mbox').remove();
     
-    // Try to find the main content area
-    let content = '';
+    // Try to find the main content area and extract paragraphs
+    let paragraphs: string[] = [];
     
     // Try common Wikipedia content selectors
     const contentSelectors = [
@@ -64,21 +81,43 @@ export function extractMainContent(html: string): string {
     for (const selector of contentSelectors) {
       const element = $(selector).first();
       if (element.length > 0) {
-        content = element.text();
-        if (content.length > 500) { // Good amount of content
+        // Extract paragraphs from this element
+        element.find('p').each((_, elem) => {
+          const text = $(elem).text().trim();
+          // Only include substantial paragraphs (more than 50 chars)
+          if (text.length > 50) {
+            paragraphs.push(text);
+          }
+        });
+        
+        if (paragraphs.length > 5) { // Good amount of paragraphs
           break;
         }
       }
     }
     
-    // If no specific content found, get body text
-    if (!content || content.length < 500) {
+    // If no paragraphs found, try to get text from body
+    if (paragraphs.length === 0) {
       // Remove more unwanted elements
       $('header, footer, aside, .sidebar, .navigation, .catlinks, .mw-normal-catlinks, .printfooter, .mw-cite-backlink').remove();
-      content = $('body').text();
+      
+      // Extract paragraphs from body
+      $('body p').each((_, elem) => {
+        const text = $(elem).text().trim();
+        if (text.length > 50) {
+          paragraphs.push(text);
+        }
+      });
     }
     
-    return content;
+    // If still no paragraphs, fall back to getting all text
+    if (paragraphs.length === 0) {
+      const content = $('body').text();
+      return content;
+    }
+    
+    // Join paragraphs with double newline to preserve structure
+    return paragraphs.join('\n\n');
   } catch (error) {
     // Fallback to regex-based extraction if Cheerio fails
     console.warn('Cheerio not available, using regex extraction');
