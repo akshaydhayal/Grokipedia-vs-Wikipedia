@@ -36,8 +36,8 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
       {/* Side-by-side comparison */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Wikipedia Column */}
-        <div className="glass border-2 border-accent-purple/30 rounded-xl p-5 bg-dark-secondary/30">
-          <div className="flex items-center justify-between mb-5 pb-4 border-b-2 border-accent-purple/20">
+        <div className="rounded-lg p-5 bg-dark-secondary/40 border-2 border-slate-500 shadow-[0_0_20px_rgba(16,185,129,0.08)] backdrop-blur">
+          <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-700/60">
             <h3 className="font-bold text-xl text-accent-purple">Wikipedia</h3>
             <a
               href={wikipedia.url}
@@ -48,7 +48,7 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
               View Source →
             </a>
           </div>
-          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 scrollable-content">
             {wikipedia.sentences.map((sentence, index) => (
               <div
                 key={index}
@@ -61,8 +61,8 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
         </div>
 
         {/* Grokipedia Column */}
-        <div className="glass border-2 border-accent-cyan/30 rounded-xl p-5 bg-dark-secondary/30">
-          <div className="flex items-center justify-between mb-5 pb-4 border-b-2 border-accent-cyan/20">
+        <div className="rounded-lg p-5 bg-dark-secondary/40 border-2 border-slate-500 shadow-[0_0_20px_rgba(16,185,129,0.08)] backdrop-blur">
+          <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-700/60">
             <h3 className="font-bold text-xl text-accent-cyan">Grokipedia</h3>
             <a
               href={grokipedia.url}
@@ -73,7 +73,7 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
               View Source →
             </a>
           </div>
-          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 scrollable-content">
             {comparisons.map((comp, index) => {
               const colorClass = getStatusColor(comp.status);
               const similarityLabel = getSimilarityLabel(comp.similarity);
@@ -81,18 +81,18 @@ export default function DiffViewer({ comparison, onSentenceClick }: DiffViewerPr
               return (
                 <div
                   key={index}
-                  className={`p-4 text-sm border-l-4 ${colorClass} cursor-pointer hover:opacity-90 transition-all rounded-r-lg bg-dark-tertiary/40`}
+                  className={`p-4 text-sm border-l-4 ${colorClass} cursor-pointer hover:opacity-90 transition-all rounded-lg`}
                   onClick={() => onSentenceClick?.(comp)}
                   title={`Similarity: ${(comp.similarity * 100).toFixed(1)}% - ${similarityLabel}`}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
-                    <span className="text-slate-200 leading-relaxed flex-1">{comp.grokSentence.text}</span>
-                    <span className="text-xs font-bold whitespace-nowrap px-2.5 py-1 bg-dark-secondary/80 rounded border border-slate-600/50">
+                    <span className="leading-relaxed flex-1">{comp.grokSentence.text}</span>
+                    <span className="text-xs font-bold whitespace-nowrap px-2.5 py-1 bg-black/20 rounded border border-white/10">
                       {(comp.similarity * 100).toFixed(0)}%
                     </span>
                   </div>
                   {comp.bestMatch && comp.status !== 'unique' && (
-                    <div className="mt-3 pt-3 text-xs text-slate-400 italic border-t border-slate-700/50">
+                    <div className="mt-3 pt-3 text-xs opacity-80 italic border-t border-white/20">
                       Matches: "{comp.bestMatch.wikiSentence.text.substring(0, 100)}..."
                     </div>
                   )}

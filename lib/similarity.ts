@@ -134,11 +134,11 @@ function generateSummary(comparisons: SentenceComparison[]): ComparisonSummary {
 export function getStatusColor(status: SentenceComparison['status']): string {
   switch (status) {
     case 'match':
-      return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50';
+      return 'bg-emerald-500/30 text-emerald-100 border-emerald-500/60';
     case 'paraphrase':
-      return 'bg-amber-500/20 text-amber-300 border-amber-500/50';
+      return 'bg-amber-500/30 text-amber-100 border-amber-500/60';
     case 'unique':
-      return 'bg-rose-500/20 text-rose-300 border-rose-500/50';
+      return 'bg-rose-500/30 text-rose-100 border-rose-500/60';
     case 'missing':
       return 'bg-slate-700/50 text-slate-400 border-slate-600/50';
     default:
