@@ -98,6 +98,39 @@ export default function NoteEditor({ note, onSave, onPublish, isPublishing = fal
           ))}
         </div>
 
+        {/* JSON-LD Preview */}
+        <div className="mt-6 border-t border-slate-700/50 pt-6">
+          <details className="group">
+            <summary className="cursor-pointer flex items-center justify-between text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+              <span className="flex items-center gap-2">
+                <span>📄</span>
+                <span>Preview JSON-LD (This will be published to DKG)</span>
+              </span>
+              <span className="text-xs text-slate-500 group-open:hidden">Click to expand</span>
+              <span className="text-xs text-slate-500 hidden group-open:inline">Click to collapse</span>
+            </summary>
+            <div className="mt-4 p-4 bg-dark-tertiary/40 border border-slate-700/60 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-slate-400">
+                  This is the JSON-LD structure that will be published to the OriginTrail DKG as a Knowledge Asset.
+                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(JSON.stringify(editedNote, null, 2));
+                  }}
+                  className="text-xs px-3 py-1.5 bg-dark-secondary/60 border border-slate-700/50 text-slate-300 rounded hover:bg-dark-secondary/80 transition-colors"
+                >
+                  Copy JSON
+                </button>
+              </div>
+              <pre className="text-xs text-slate-300 overflow-auto max-h-96 p-4 bg-dark-primary/50 rounded border border-slate-800/50">
+                {JSON.stringify(editedNote, null, 2)}
+              </pre>
+            </div>
+          </details>
+        </div>
+
         {/* Action Buttons */}
         <div className="flex gap-4 mt-6">
           <button
