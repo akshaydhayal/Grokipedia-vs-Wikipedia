@@ -3,7 +3,6 @@
 // Usage: node publish-script.js
 
 import DKG from './index.js';
-import 'dotenv/config';
 
 // Read input from stdin
 let inputData = '';
