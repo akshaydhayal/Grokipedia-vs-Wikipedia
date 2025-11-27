@@ -12,9 +12,12 @@
    Create a `.env.local` file in the root directory:
    ```env
    NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+   MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/
    ```
    
-   Get your Gemini API key from: https://makersuite.google.com/app/apikey
+   - Get your Gemini API key from: https://makersuite.google.com/app/apikey
+   - MongoDB URI format: `mongodb+srv://user:password@cluster.mongodb.net/` (database name will be added automatically)
+   - The app will use database `WikiVsGrokipediaKA` (created automatically if it doesn't exist)
 
 3. **Run Development Server**
    ```bash
@@ -45,17 +48,39 @@ DKG_BLOCKCHAIN_NAME=otp:20430
 
 The DKG publishing uses the `dkg-publish` module in this repository, which connects to OriginTrail public nodes.
 
+## MongoDB (Knowledge Assets Storage)
+
+The app uses MongoDB to store published Knowledge Assets. When a Community Note is successfully published to DKG, it's automatically saved to MongoDB with the following information:
+
+- Topic name
+- UAL (Unique Asset Locator)
+- Dataset Root
+- Publication date
+- Summary and statistics
+- Full JSON-LD data
+
+**Database**: `WikiVsGrokipediaKA`  
+**Collection**: `knowledgeassets`
+
+You can view all published assets at `/assets` page.
+
 ## Project Structure
 
 - `app/` - Next.js app directory with pages and API routes
-- `components/` - React components (SearchBox, DiffViewer, NoteEditor)
+  - `api/assets/` - API route to fetch published Knowledge Assets
+  - `api/publish/` - API route to publish to DKG and save to MongoDB
+  - `assets/` - Page to browse all published Knowledge Assets
+- `components/` - React components (SearchBox, DiffViewer, NoteEditor, Header)
 - `lib/` - Core utilities and services
   - `wikipedia.ts` - Wikipedia API client
   - `grokipedia.ts` - Grokipedia scraper
   - `embeddings.ts` - Gemini embeddings service
   - `similarity.ts` - Similarity comparison engine
   - `dkg.ts` - DKG publishing client
+  - `mongodb.ts` - MongoDB connection utility
   - `utils.ts` - Text processing utilities
+- `models/` - MongoDB models
+  - `KnowledgeAsset.ts` - Schema for published Knowledge Assets
 - `types/` - TypeScript type definitions
 
 ## How It Works

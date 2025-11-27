@@ -5,6 +5,8 @@ import { validateCommunityNote } from '@/lib/dkg';
 import { CommunityNote } from '@/types';
 import { spawn } from 'child_process';
 import path from 'path';
+import connectDB from '@/lib/mongodb';
+import KnowledgeAsset from '@/models/KnowledgeAsset';
 
 // Type for the child process result
 interface DKGPublishResult {
@@ -104,6 +106,34 @@ export async function POST(request: NextRequest) {
         error: result.error || 'DKG publish failed',
         jsonld: note,
       }, { status: 500 });
+    }
+
+    // Save to MongoDB on successful publish
+    try {
+      await connectDB();
+      
+      const topic = note.about || 'Unknown';
+      const discrepancyCount = note.discrepancies?.length || 0;
+      const hallucinationCount = note.discrepancies?.filter(d => d.status === 'hallucination').length || 0;
+      
+      await KnowledgeAsset.create({
+        topic,
+        ual: result.ual!,
+        datasetRoot: result.datasetRoot || undefined,
+        publishedAt: new Date(note.published || new Date()),
+        author: note.author,
+        summary: note.summary,
+        discrepancyCount,
+        hallucinationCount,
+        wikipediaUrl: note.discrepancies?.[0]?.evidence?.[0] || '',
+        grokipediaUrl: note.discrepancies?.[0]?.evidence?.[1] || '',
+        jsonld: note,
+      });
+      
+      console.log('Knowledge Asset saved to MongoDB:', result.ual);
+    } catch (dbError) {
+      // Log error but don't fail the request if DB save fails
+      console.error('Failed to save to MongoDB:', dbError);
     }
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Toaster from '@/components/Toaster';
+import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: 'Grokipedia vs Wikipedia - Content Comparison',
@@ -15,16 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen">
-        <header className="glass border-b border-slate-700/50 sticky top-0 z-50 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto px-4 py-5">
-            <h1 className="text-3xl font-bold gradient-text">
-              Grokipedia vs Wikipedia
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Content Comparison & Trust Annotation
-            </p>
-          </div>
-        </header>
+        <Header />
         <main className="max-w-7xl mx-auto px-4 py-8">
           {children}
         </main>
