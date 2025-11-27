@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import DiffViewer from '@/components/DiffViewer';
 import NoteEditor from '@/components/NoteEditor';
 import { ComparisonResult, CommunityNote, SentenceComparison, PublishResult } from '@/types';
 import { generateCommunityNote } from '@/lib/dkg';
 
-export default function ResultsPage() {
+function ResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const topic = searchParams.get('topic') || '';
@@ -108,14 +109,22 @@ export default function ResultsPage() {
       setPublishResult(result);
 
       if (result.success) {
-        // Show success message
-        alert(`Successfully published! UAL: ${result.ual || 'Check console for JSON-LD'}`);
+        toast.success(
+          `Successfully published to DKG! UAL: ${result.ual?.substring(0, 50)}...`,
+          {
+            duration: 10000,
+          }
+        );
       } else {
-        alert(`Failed to publish: ${result.error}`);
+        toast.error(`Failed to publish: ${result.error || 'Unknown error'}`, {
+          duration: 5000,
+        });
       }
     } catch (err) {
       console.error('Publish error:', err);
-      alert('Failed to publish note');
+      toast.error('Failed to publish note. Please try again.', {
+        duration: 5000,
+      });
     } finally {
       setIsPublishing(false);
     }
@@ -290,7 +299,50 @@ export default function ResultsPage() {
           )}
         </section>
       )}
+
+      {/* Publishing Loader Modal */}
+      {isPublishing && (
+        <>
+          {/* 50% transparent overlay */}
+          <div className="fixed inset-0 z-40 bg-dark-primary/80 backdrop-blur-xs"></div>
+          {/* Modal */}
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-dark-secondary/95 border border-slate-700/60 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-700 border-t-accent-cyan"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-accent-cyan/20 animate-pulse"></div>
+                </div>
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold text-slate-100">Publishing Knowledge Asset to DKG</h3>
+                <p className="text-sm text-slate-400">
+                  Please wait while we publish your Community Note to the OriginTrail Decentralized Knowledge Graph...
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  This may take a few moments
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-cyan mb-4"></div>
+          <p className="text-slate-300">Loading...</p>
+        </div>
+      }
+    >
+      <ResultsContent />
+    </Suspense>
   );
 }
 

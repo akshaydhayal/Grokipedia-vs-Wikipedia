@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Toaster from '@/components/Toaster';
 
 export const metadata: Metadata = {
   title: 'Grokipedia vs Wikipedia - Content Comparison',
@@ -32,6 +33,7 @@ export default function RootLayout({
             Built for <span className="text-accent-cyan">OriginTrail Hackathon</span> - Challenge 1
           </div>
         </footer>
+        <Toaster />
       </body>
     </html>
   );
