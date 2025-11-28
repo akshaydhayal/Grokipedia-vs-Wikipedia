@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
       const dkgPath = path.join(process.cwd(), 'dkg-publish', 'index.js');
       const fileUrl = pathToFileURL(dkgPath).href;
       
+      console.log('Attempting direct import from:', fileUrl);
       const DKGModule = await import(fileUrl);
       const DKG = DKGModule.default;
       
@@ -109,7 +110,8 @@ export async function POST(request: NextRequest) {
       };
     } catch (directImportError) {
       // Fallback to child process if direct import fails
-      console.log('Direct import failed, trying child process:', directImportError);
+      console.error('Direct import failed, trying child process:', directImportError);
+      console.error('Direct import error details:', directImportError instanceof Error ? directImportError.message : String(directImportError));
       
       const scriptPath = path.join(process.cwd(), 'dkg-publish', 'publish-script.js');
       console.log('Running DKG publish script at:', scriptPath);

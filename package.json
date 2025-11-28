@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.2.1",
+    "assertion-tools": "8.0.6",
     "cheerio": "^1.0.0-rc.12",
+    "dkg-evm-module": "8.0.4",
     "dkg.js": "^6.0.0",
+    "ethers": "^6.1.0",
     "jsonld": "^8.3.2",
     "mongoose": "^8.20.1",
     "next": "^14.0.0",
