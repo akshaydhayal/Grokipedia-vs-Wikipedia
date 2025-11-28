@@ -3,12 +3,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCommunityNote } from '@/lib/dkg';
 import { CommunityNote } from '@/types';
-import { spawn } from 'child_process';
-import path from 'path';
 import connectDB from '@/lib/mongodb';
 import KnowledgeAsset from '@/models/KnowledgeAsset';
 
-// Type for the child process result
+// Type for the publish result
 interface DKGPublishResult {
   success: boolean;
   ual?: string;
@@ -40,36 +38,20 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    // Use child process to run DKG publish script
+    // Get DKG configuration
     const nodeEndpoint = process.env.DKG_NODE_ENDPOINT || 'https://v6-pegasus-node-03.origin-trail.network';
     const nodePort = process.env.DKG_NODE_PORT || '8900';
     const blockchainName = process.env.DKG_BLOCKCHAIN_NAME || 'otp:20430';
     
-    const input = JSON.stringify({
-      note,
-      nodeEndpoint,
-      nodePort,
-      blockchainName,
-      privateKey,
-    });
-    
-    // Try to use direct import first (works better on Vercel)
-    // Fallback to child process if direct import fails
     let result: DKGPublishResult;
     
     try {
-      // Direct import approach (better for Vercel)
-      const { pathToFileURL } = await import('url');
-      const dkgPath = path.join(process.cwd(), 'dkg-publish', 'index.js');
-      const fileUrl = pathToFileURL(dkgPath).href;
+      // Use the dkg.js npm package directly
+      // Dynamic import to avoid bundling issues
+      const DKGModule = await import('dkg.js');
+      const DKG = DKGModule.default || DKGModule;
       
-      console.log('Attempting direct import from:', fileUrl);
-      const DKGModule = await import(fileUrl);
-      const DKG = DKGModule.default;
-      
-      if (!DKG) {
-        throw new Error('DKG module does not have a default export');
-      }
+      console.log('Creating DKG client with endpoint:', nodeEndpoint);
       
       // Create DKG client
       const dkgClient = new DKG({
@@ -98,6 +80,9 @@ export async function POST(request: NextRequest) {
         minimumNumberOfNodeReplications: 1,
       });
       
+      console.log('DKG publish completed');
+      console.log('Create result:', JSON.stringify(createResult, null, 2));
+      
       // Extract UAL and datasetRoot
       const ual = createResult.UAL || createResult.ual;
       const datasetRoot = createResult.publicAssertionId || createResult.datasetRoot || null;
@@ -105,69 +90,16 @@ export async function POST(request: NextRequest) {
       result = {
         success: true,
         ual: ual,
-        datasetRoot: datasetRoot,
-        operation: createResult.operation || null,
+        datasetRoot: datasetRoot || undefined,
+        operation: createResult.operation || undefined,
       };
-    } catch (directImportError) {
-      // Fallback to child process if direct import fails
-      console.error('Direct import failed, trying child process:', directImportError);
-      console.error('Direct import error details:', directImportError instanceof Error ? directImportError.message : String(directImportError));
-      
-      const scriptPath = path.join(process.cwd(), 'dkg-publish', 'publish-script.js');
-      console.log('Running DKG publish script at:', scriptPath);
-      
-      result = await new Promise<DKGPublishResult>((resolve, reject) => {
-        const child = spawn('node', [scriptPath], {
-          cwd: path.join(process.cwd(), 'dkg-publish'),
-          env: { ...process.env },
-        });
-        
-        let stdout = '';
-        let stderr = '';
-        
-        child.stdout.on('data', (data) => {
-          stdout += data.toString();
-        });
-        
-        child.stderr.on('data', (data) => {
-          stderr += data.toString();
-          console.log('DKG Script:', data.toString());
-        });
-        
-        child.on('error', (error) => {
-          console.error('Failed to start DKG script:', error);
-          reject(new Error(`Failed to start DKG script: ${error.message}`));
-        });
-        
-        child.on('close', (code) => {
-          console.log('DKG script exited with code:', code);
-          console.log('stdout:', stdout);
-          console.log('stderr:', stderr);
-          
-          if (code !== 0) {
-            reject(new Error(`DKG script exited with code ${code}. stderr: ${stderr}`));
-            return;
-          }
-          
-          try {
-            // Parse the last line of stdout as JSON result
-            const lines = stdout.trim().split('\n').filter(line => line.trim());
-            if (lines.length === 0) {
-              reject(new Error(`No output from DKG script. stderr: ${stderr}`));
-              return;
-            }
-            const lastLine = lines[lines.length - 1];
-            const parsedResult: DKGPublishResult = JSON.parse(lastLine);
-            resolve(parsedResult);
-          } catch (parseError) {
-            reject(new Error(`Failed to parse DKG result. stdout: ${stdout}, stderr: ${stderr}, parseError: ${parseError instanceof Error ? parseError.message : 'Unknown'}`));
-          }
-        });
-        
-        // Send input to the script
-        child.stdin.write(input);
-        child.stdin.end();
-      });
+    } catch (dkgError) {
+      console.error('DKG publish error:', dkgError);
+      return NextResponse.json({
+        success: false,
+        error: dkgError instanceof Error ? dkgError.message : 'DKG publish failed',
+        jsonld: note,
+      }, { status: 500 });
     }
     
     if (!result.success) {
@@ -221,4 +153,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
