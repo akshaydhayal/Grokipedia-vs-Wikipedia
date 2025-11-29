@@ -121,63 +121,84 @@ export default function SearchBox({ onSearch, isLoading = false }: SearchBoxProp
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto relative">
-      <div className="flex gap-3 items-start">
-        <div className="flex-1 relative">
-          <div className="relative">
-            {/* Magnifying glass icon */}
-            <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
+      <div className="relative">
+        {/* Magnifying glass icon */}
+        <svg
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none z-10"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        
+        {/* Upward arrow icon (Enter indicator) - Circular button */}
+        {!isLoadingSuggestions && (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+            <div className="w-8 h-8 rounded-full border border-cyan-400/60 flex items-center justify-center bg-transparent">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              ref={inputRef}
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              onFocus={() => {
-                if (suggestions.length > 0) setShowSuggestions(true);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Enter a topic (e.g., Climate Change, PlayStation 5, Artificial Intelligence)"
-              className="w-full pl-12 pr-4 py-4 bg-dark-tertiary/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50 transition-all backdrop-blur-sm"
-              disabled={isLoading}
-              autoComplete="off"
-            />
-          </div>
-          
-          
-          {/* Loading indicator */}
-          {isLoadingSuggestions && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-              <div className="w-5 h-5 border-2 border-slate-600 border-t-accent-cyan rounded-full animate-spin"></div>
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 5l-7 7m7-7l7 7" />
+              </svg>
             </div>
-          )}
+          </div>
+        )}
+        
+        {/* Loading indicator */}
+        {isLoadingSuggestions && (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
+            <div className="w-5 h-5 border-2 border-slate-600 border-t-accent-cyan rounded-full animate-spin"></div>
+          </div>
+        )}
+        
+        <input
+          ref={inputRef}
+          type="text"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          onFocus={() => {
+            if (suggestions.length > 0) setShowSuggestions(true);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter a topic (e.g., Climate Change, Artificial Intelligence)"
+          className="w-full pl-12 pr-12 py-4 bg-dark-tertiary/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50 transition-all backdrop-blur-sm"
+          disabled={isLoading}
+          autoComplete="off"
+        />
 
-          {/* Suggestions dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div
-              ref={suggestionsRef}
-              className="absolute z-50 w-full mt-2 bg-dark-secondary/95 border border-slate-700/60 rounded-xl shadow-2xl shadow-black/50 backdrop-blur-xl overflow-hidden"
-            >
-              <div className="py-2 relative">
-                {/* Close button with upward arrow - top right */}
-                {/* <button
+        {/* Suggestions dropdown */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div
+            ref={suggestionsRef}
+            className="absolute z-50 w-full mt-2 bg-dark-secondary/95 border border-slate-700/60 rounded-xl shadow-2xl shadow-black/50 backdrop-blur-xl overflow-hidden"
+          >
+            <div className="py-2 relative">
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.slug}
                   type="button"
-                  onClick={() => setShowSuggestions(false)}
-                  className="absolute right-2 top-2 w-8 h-8 rounded-full bg-slate-700/50 hover:bg-slate-700 flex items-center justify-center transition-all"
-                  aria-label="Close suggestions"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className={`w-full px-4 py-2.5 text-left transition-all flex items-center gap-3 ${
+                    index === selectedIndex
+                      ? 'bg-accent-cyan/20 text-white'
+                      : 'hover:bg-slate-800/50 text-slate-200'
+                  }`}
                 >
+                  {/* Magnifying glass icon */}
                   <svg
-                    className="w-4 h-4 text-slate-300"
+                    className="w-5 h-5 text-slate-400 flex-shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -186,72 +207,36 @@ export default function SearchBox({ onSearch, isLoading = false }: SearchBoxProp
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M5 15l7-7 7 7"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
-                </button> */}
-                
-                {suggestions.map((suggestion, index) => (
-                  <button
-                    key={suggestion.slug}
-                    type="button"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className={`w-full px-4 py-2.5 text-left transition-all flex items-center gap-3 ${
-                      index === selectedIndex
-                        ? 'bg-accent-cyan/20 text-white'
-                        : 'hover:bg-slate-800/50 text-slate-200'
-                    }`}
+                  {/* Suggestion title */}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{suggestion.title}</div>
+                  </div>
+                  {/* Right arrow icon */}
+                  <svg
+                    className="w-4 h-4 text-slate-400 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {/* Magnifying glass icon */}
-                    <svg
-                      className="w-5 h-5 text-slate-400 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    {/* Suggestion title */}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{suggestion.title}</div>
-                    </div>
-                    {/* Right arrow icon */}
-                    <svg
-                      className="w-4 h-4 text-slate-400 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                ))}
-              </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              ))}
             </div>
-          )}
-        </div>
-        
-        <button
-          type="submit"
-          disabled={isLoading || !topic.trim()}
-          className="px-8 py-4 bg-gradient-to-r from-accent-cyan to-accent-purple text-white rounded-xl hover:from-accent-cyan/90 hover:to-accent-purple/90 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed transition-all font-semibold shadow-lg shadow-accent-cyan/20 hover:shadow-accent-cyan/30"
-        >
-          {isLoading ? 'Searching...' : 'Compare'}
-        </button>
+          </div>
+        )}
       </div>
-      <p className="mt-3 text-sm text-slate-400 text-center">
+      {/* <p className="mt-3 text-sm text-slate-400 text-center">
         Compare content from Wikipedia and Grokipedia
-      </p>
+      </p> */}
     </form>
   );
 }

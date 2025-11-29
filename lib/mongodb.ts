@@ -54,7 +54,7 @@ async function connectDB() {
     
     // Append database name if not present
     if (!hasDatabase) {
-      connectionString = connectionString + '/WikiVsGrokipediaKA';
+      connectionString = connectionString + '/WikiVsGrokipedia';
     }
 
     console.log('Connecting to MongoDB:', connectionString.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')); // Log with masked credentials
