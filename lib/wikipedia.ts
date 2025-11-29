@@ -120,7 +120,10 @@ async function fetchWikipediaSummary(topic: string): Promise<Article> {
   );
   
   if (!response.ok) {
-    throw new Error(`Wikipedia page not found: ${topic}`);
+    if (response.status === 404) {
+      throw new Error(`Article "${topic}" not found on Wikipedia`);
+    }
+    throw new Error(`Failed to fetch from Wikipedia (HTTP ${response.status})`);
   }
   
   const data: WikipediaPage = await response.json();
@@ -147,7 +150,10 @@ async function fetchWikipediaFullPage(topic: string): Promise<Article> {
   );
   
   if (!response.ok) {
-    throw new Error(`Wikipedia page not found: ${topic}`);
+    if (response.status === 404) {
+      throw new Error(`Article "${topic}" not found on Wikipedia`);
+    }
+    throw new Error(`Failed to fetch from Wikipedia (HTTP ${response.status})`);
   }
   
   const html = await response.text();

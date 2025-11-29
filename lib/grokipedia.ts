@@ -165,11 +165,13 @@ export async function fetchGrokipediaArticle(topic: string): Promise<Article> {
       } else if (response.status === 404) {
         // Try next variant
         console.log(`✗ Grokipedia 404 for variant: "${variant}"`);
-        lastError = new Error(`Grokipedia page not found: ${variant} (Status: 404)`);
+        lastError = new Error(`Article "${topic}" not found on Grokipedia`);
         continue;
+      } else if (response.status === 500 || response.status === 502 || response.status === 503) {
+        throw new Error(`Grokipedia server is temporarily unavailable. Please try again later.`);
       } else {
         // Other error, throw immediately
-        throw new Error(`Grokipedia fetch failed: ${variant} (Status: ${response.status})`);
+        throw new Error(`Failed to fetch from Grokipedia (HTTP ${response.status})`);
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes('Status: 404')) {
@@ -182,7 +184,7 @@ export async function fetchGrokipediaArticle(topic: string): Promise<Article> {
   }
   
   // All variants failed
-  throw lastError || new Error(`Grokipedia page not found for any variant of: ${topic}`);
+  throw lastError || new Error(`Article "${topic}" not found on Grokipedia. Check if the article exists at grokipedia.com`);
 }
 
 /**

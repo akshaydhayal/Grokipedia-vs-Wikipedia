@@ -6,7 +6,7 @@ import { fetchGrokipediaArticle } from '@/lib/grokipedia';
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic } = await request.json();
+    const { topic, slug } = await request.json();
     
     if (!topic || typeof topic !== 'string') {
       return NextResponse.json(
@@ -15,10 +15,14 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Use slug if provided (from typeahead), otherwise use topic
+    // Slug is the exact page identifier from Grokipedia API
+    const searchTerm = slug || topic;
+    
     // Fetch from both sources in parallel
     const [wikipedia, grokipedia] = await Promise.allSettled([
-      fetchWikipediaArticle(topic),
-      fetchGrokipediaArticle(topic),
+      fetchWikipediaArticle(searchTerm),
+      fetchGrokipediaArticle(searchTerm),
     ]);
     
     const result: any = {

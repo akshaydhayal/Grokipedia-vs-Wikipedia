@@ -8,11 +8,15 @@ export default function HomePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSearch = async (topic: string) => {
+  const handleSearch = async (topic: string, slug?: string) => {
     setIsLoading(true);
     try {
-      // Navigate to results page with topic as query param
-      router.push(`/results?topic=${encodeURIComponent(topic)}`);
+      // Navigate to results page with topic and optional slug as query params
+      const params = new URLSearchParams({ topic });
+      if (slug) {
+        params.append('slug', slug);
+      }
+      router.push(`/results?${params.toString()}`);
     } catch (error) {
       console.error('Error navigating:', error);
       setIsLoading(false);

@@ -12,6 +12,7 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const topic = searchParams.get('topic') || '';
+  const slug = searchParams.get('slug') || '';
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +29,7 @@ function ResultsContent() {
     }
 
     fetchAndCompare();
-  }, [topic]);
+  }, [topic, slug]);
 
   const fetchAndCompare = async () => {
     setLoading(true);
@@ -36,10 +37,11 @@ function ResultsContent() {
 
     try {
       // Step 1: Fetch articles
+      // Pass slug if available (from typeahead selection) for exact page matching
       const fetchResponse = await fetch('/api/fetch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, slug: slug || undefined }),
       });
 
       if (!fetchResponse.ok) {
@@ -50,7 +52,30 @@ function ResultsContent() {
       const fetchData = await fetchResponse.json();
 
       if (!fetchData.wikipedia || !fetchData.grokipedia) {
-        throw new Error('Failed to fetch one or both articles');
+        // Build specific error message based on which articles failed
+        const failedSources: string[] = [];
+        const errorDetails: string[] = [];
+        
+        if (!fetchData.wikipedia) {
+          failedSources.push('Wikipedia');
+          if (fetchData.errors?.wikipedia) {
+            errorDetails.push(`Wikipedia: ${fetchData.errors.wikipedia}`);
+          }
+        }
+        
+        if (!fetchData.grokipedia) {
+          failedSources.push('Grokipedia');
+          if (fetchData.errors?.grokipedia) {
+            errorDetails.push(`Grokipedia: ${fetchData.errors.grokipedia}`);
+          }
+        }
+        
+        let errorMessage = `Failed to fetch article from ${failedSources.join(' and ')}`;
+        if (errorDetails.length > 0) {
+          errorMessage += `.\n\nDetails:\n${errorDetails.join('\n')}`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       // Step 2: Compare articles
@@ -141,10 +166,30 @@ function ResultsContent() {
   }
 
   if (error) {
+    // Split error into main message and details if present
+    const [mainError, ...detailLines] = error.split('\n\nDetails:\n');
+    const details = detailLines.join('\n');
+    
     return (
       <div className="glass border border-rose-500/30 rounded-xl p-6">
         <h2 className="text-xl font-bold text-rose-400 mb-2">Error</h2>
-        <p className="text-slate-300 mb-4">{error}</p>
+        <p className="text-slate-300 mb-3">{mainError}</p>
+        {details && (
+          <div className="bg-dark-tertiary/50 border border-slate-700/50 rounded-lg p-4 mb-4">
+            <p className="text-sm text-slate-400 mb-2 font-medium">Details:</p>
+            {details.split('\n').map((detail, index) => (
+              <p key={index} className="text-sm text-slate-300 mb-1">
+                {detail.startsWith('Wikipedia:') && (
+                  <span className="text-accent-purple font-medium">Wikipedia: </span>
+                )}
+                {detail.startsWith('Grokipedia:') && (
+                  <span className="text-accent-cyan font-medium">Grokipedia: </span>
+                )}
+                {detail.replace(/^(Wikipedia:|Grokipedia:)\s*/, '')}
+              </p>
+            ))}
+          </div>
+        )}
         <button
           onClick={() => router.push('/')}
           className="px-4 py-2 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-lg hover:from-rose-600 hover:to-rose-700 transition-all"
